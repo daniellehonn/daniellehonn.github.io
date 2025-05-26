@@ -1,0 +1,1196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>College Budget Buddy</title>
+    <style>
+        :root {
+            --primary-color: #1a1a1a;
+            --secondary-color: #2d2d2d;
+            --accent-color: #6366f1;
+            --accent-hover: #4f46e5;
+            --background-color: #fafafa;
+            --sidebar-bg: #ffffff;
+            --card-background: #ffffff;
+            --text-color: #1f2937;
+            --text-secondary: #6b7280;
+            --text-light: #9ca3af;
+            --border-color: #e5e7eb;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --border-radius: 12px;
+            --border-radius-sm: 8px;
+            --box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            --box-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* --- Sidebar Navigation --- */
+        .sidebar {
+            width: 280px;
+            background-color: var(--sidebar-bg);
+            border-right: 1px solid var(--border-color);
+            padding: 24px 0;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+
+        .sidebar-header {
+            padding: 0 24px 32px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 24px;
+        }
+
+        .sidebar-header h1 {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sidebar-header h1::before {
+            content: "💰";
+            font-size: 24px;
+        }
+
+        .nav-menu {
+            list-style: none;
+            padding: 0 16px;
+        }
+
+        .nav-menu li {
+            margin-bottom: 4px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: var(--border-radius-sm);
+            font-weight: 500;
+            transition: all 0.2s ease;
+            gap: 12px;
+        }
+
+        .nav-link:hover {
+            background-color: #f3f4f6;
+            color: var(--text-color);
+        }
+
+        .nav-link.active {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        .nav-link::before {
+            font-size: 18px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .nav-link[data-view="dashboard"]::before { content: "📊"; }
+        .nav-link[data-view="income"]::before { content: "💵"; }
+        .nav-link[data-view="budgets"]::before { content: "🎯"; }
+        .nav-link[data-view="expenses"]::before { content: "💳"; }
+
+        /* --- Main Content --- */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 32px;
+            max-width: calc(100vw - 280px);
+        }
+
+        .page-header {
+            margin-bottom: 32px;
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-color);
+            margin-bottom: 8px;
+        }
+
+        .page-subtitle {
+            color: var(--text-secondary);
+            font-size: 16px;
+        }
+
+        /* --- Cards and Sections --- */
+        .card {
+            background-color: var(--card-background);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 24px;
+            margin-bottom: 24px;
+            border: 1px solid var(--border-color);
+        }
+
+        .card-header {
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 4px;
+        }
+
+        .card-subtitle {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        /* --- Dashboard Grid --- */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, var(--card-background) 0%, #f8fafc 100%);
+            border-radius: var(--border-radius);
+            padding: 24px;
+            border: 1px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent-color), var(--success-color));
+        }
+
+        .stat-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--text-color);
+            margin-bottom: 8px;
+        }
+
+        .stat-value.positive { color: var(--success-color); }
+        .stat-value.negative { color: var(--danger-color); }
+
+        .stat-change {
+            font-size: 12px;
+            color: var(--text-light);
+        }
+
+        /* --- Forms --- */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+
+        .form-section {
+            background-color: var(--card-background);
+            border-radius: var(--border-radius);
+            padding: 24px;
+            border: 1px solid var(--border-color);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group.inline {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-color);
+            font-size: 14px;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="date"],
+        input[type="month"],
+        input[type="color"],
+        select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-sm);
+            font-size: 14px;
+            background-color: white;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        /* --- Buttons --- */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 24px;
+            border: none;
+            border-radius: var(--border-radius-sm);
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--accent-hover);
+            transform: translateY(-1px);
+            box-shadow: var(--box-shadow-lg);
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #404040;
+        }
+
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #dc2626;
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        /* --- Lists and Tables --- */
+        .item-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .item-list li {
+            background-color: #f9fafb;
+            padding: 16px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-sm);
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s ease;
+        }
+
+        .item-list li:hover {
+            background-color: #f3f4f6;
+            transform: translateY(-1px);
+            box-shadow: var(--box-shadow);
+        }
+
+        .table-container {
+            background-color: var(--card-background);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background-color: #f9fafb;
+            padding: 16px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-color);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        td {
+            padding: 16px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 14px;
+        }
+
+        tbody tr:hover {
+            background-color: #f9fafb;
+        }
+
+        /* --- Budget Progress Bars --- */
+        .budget-item {
+            background-color: #f9fafb;
+            border-radius: var(--border-radius-sm);
+            padding: 20px;
+            margin-bottom: 16px;
+            border: 1px solid var(--border-color);
+        }
+
+        .budget-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .budget-name {
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .budget-amount {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .progress-container {
+            background-color: #e5e7eb;
+            border-radius: 8px;
+            height: 8px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            border-radius: 8px;
+            transition: width 0.3s ease;
+            position: relative;
+        }
+
+        .progress-bar.normal {
+            background: linear-gradient(90deg, var(--success-color), #34d399);
+        }
+
+        .progress-bar.warning {
+            background: linear-gradient(90deg, var(--warning-color), #fbbf24);
+        }
+
+        .progress-bar.danger {
+            background: linear-gradient(90deg, var(--danger-color), #f87171);
+        }
+
+        .progress-text {
+            font-size: 12px;
+            color: var(--text-secondary);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* --- Mobile Responsiveness --- */
+        .mobile-menu-toggle {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1001;
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius-sm);
+            padding: 12px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+                max-width: 100vw;
+                padding: 20px;
+            }
+
+            .mobile-menu-toggle {
+                display: block;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .btn-group {
+                flex-direction: column;
+            }
+
+            .page-title {
+                font-size: 24px;
+                margin-top: 40px;
+            }
+        }
+
+        /* --- View Management --- */
+        .view {
+            display: none;
+        }
+
+        .view.active {
+            display: block;
+        }
+
+        /* --- Utility Classes --- */
+        .text-center { text-align: center; }
+        .mt-20 { margin-top: 20px; }
+        .mb-20 { margin-bottom: 20px; }
+        .d-none { display: none !important; }
+
+        /* --- Empty States --- */
+        .empty-state {
+            text-align: center;
+            padding: 48px 24px;
+            color: var(--text-secondary);
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .empty-state-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-color);
+        }
+
+        .empty-state-description {
+            font-size: 14px;
+            margin-bottom: 24px;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <button class="mobile-menu-toggle" id="mobileMenuToggle">☰</button>
+        
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h1>Budget Buddy</h1>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="#" class="nav-link active" data-view="dashboard">Dashboard</a></li>
+                <li><a href="#" class="nav-link" data-view="income">Income</a></li>
+                <li><a href="#" class="nav-link" data-view="budgets">Budgets</a></li>
+                <li><a href="#" class="nav-link" data-view="expenses">Expenses</a></li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Dashboard View -->
+            <div id="dashboardView" class="view active">
+                <div class="page-header">
+                    <h1 class="page-title">Dashboard</h1>
+                    <p class="page-subtitle">Overview of your financial status</p>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Monthly Income</div>
+                        <div class="stat-value" id="totalMonthlyIncome">$0.00</div>
+                        <div class="stat-change">Recurring monthly</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">One-Time Income</div>
+                        <div class="stat-value" id="totalOneTimeIncomeThisMonth">$0.00</div>
+                        <div class="stat-change">This month</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Total Expenses</div>
+                        <div class="stat-value negative" id="totalExpensesThisMonth">$0.00</div>
+                        <div class="stat-change">This month</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Remaining Balance</div>
+                        <div class="stat-value" id="remainingBalanceThisMonth">$0.00</div>
+                        <div class="stat-change">Available to spend</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Quick Actions</h3>
+                        <p class="card-subtitle">Manage your finances quickly</p>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="showView('income');">💵 Add Income</button>
+                        <button class="btn btn-primary" onclick="showView('expenses');">💳 Add Expense</button>
+                        <button class="btn btn-secondary" onclick="showView('budgets');">🎯 Set Budgets</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Category Spending</h3>
+                        <p class="card-subtitle">Your budget progress this month</p>
+                    </div>
+                    <div id="dashboardCategorySummary">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📊</div>
+                            <div class="empty-state-title">No spending data</div>
+                            <div class="empty-state-description">Start by adding some expenses to see your spending breakdown</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Income View -->
+            <div id="incomeView" class="view">
+                <div class="page-header">
+                    <h1 class="page-title">Income Management</h1>
+                    <p class="page-subtitle">Track your income sources</p>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-section">
+                        <div class="card-header">
+                            <h3 class="card-title">Monthly Income</h3>
+                            <p class="card-subtitle">Add recurring income sources</p>
+                        </div>
+                        <form id="addMonthlyIncomeForm">
+                            <div class="form-group">
+                                <label for="monthlyIncomeName">Source Name</label>
+                                <input type="text" id="monthlyIncomeName" placeholder="e.g., Part-time Job" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="monthlyIncomeAmount">Monthly Amount</label>
+                                <input type="number" id="monthlyIncomeAmount" min="0" step="0.01" placeholder="0.00" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Add Monthly Income</button>
+                        </form>
+                        <ul id="monthlyIncomeList" class="item-list mt-20"></ul>
+                    </div>
+
+                    <div class="form-section">
+                        <div class="card-header">
+                            <h3 class="card-title">One-Time Income</h3>
+                            <p class="card-subtitle">Add occasional income</p>
+                        </div>
+                        <form id="addOneTimeIncomeForm">
+                            <div class="form-group">
+                                <label for="oneTimeIncomeName">Source Name</label>
+                                <input type="text" id="oneTimeIncomeName" placeholder="e.g., Birthday Gift" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="oneTimeIncomeAmount">Amount</label>
+                                <input type="number" id="oneTimeIncomeAmount" min="0" step="0.01" placeholder="0.00" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="oneTimeIncomeDate">Date Received</label>
+                                <input type="date" id="oneTimeIncomeDate" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Add One-Time Income</button>
+                        </form>
+                        <ul id="oneTimeIncomeList" class="item-list mt-20"></ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Budgets View -->
+            <div id="budgetsView" class="view">
+                <div class="page-header">
+                    <h1 class="page-title">Budget Categories</h1>
+                    <p class="page-subtitle">Set spending limits for different categories</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Add New Category</h3>
+                        <p class="card-subtitle">Create a new spending category with budget limit</p>
+                    </div>
+                    <form id="addCategoryForm">
+                        <div class="form-group">
+                            <label for="categoryName">Category Name</label>
+                            <input type="text" id="categoryName" placeholder="e.g., Food & Dining" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="categoryBudget">Monthly Budget</label>
+                            <input type="number" id="categoryBudget" min="0" step="0.01" placeholder="0.00" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="categoryColor">Category Color</label>
+                            <input type="color" id="categoryColor" value="#6366f1">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Add Category</button>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Your Categories</h3>
+                        <p class="card-subtitle">Manage your spending categories and budgets</p>
+                    </div>
+                    <div id="categoryList">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">🎯</div>
+                            <div class="empty-state-title">No categories yet</div>
+                            <div class="empty-state-description">Create your first spending category to start budgeting</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Expenses View -->
+            <div id="expensesView" class="view">
+                <div class="page-header">
+                    <h1 class="page-title">Expense Tracking</h1>
+                    <p class="page-subtitle">Log and monitor your spending</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Add New Expense</h3>
+                        <p class="card-subtitle">Record a new expense</p>
+                    </div>
+                    <form id="addExpenseForm">
+                        <div class="form-group">
+                            <label for="expenseDescription">Description</label>
+                            <input type="text" id="expenseDescription" placeholder="e.g., Coffee at Starbucks" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="expenseAmount">Amount</label>
+                            <input type="number" id="expenseAmount" min="0" step="0.01" placeholder="0.00" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="expenseCategory">Category</label>
+                            <select id="expenseCategory" required>
+                                <option value="">-- Select Category --</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="expenseDate">Date</label>
+                            <input type="date" id="expenseDate" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Add Expense</button>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Expense History</h3>
+                        <div class="form-group inline">
+                            <label for="filterMonth">Filter by Month:</label>
+                            <input type="month" id="filterMonth">
+                            <button id="clearFilterBtn" class="btn btn-small btn-secondary">Show All</button>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table id="expensesTable">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Description</th>
+                                    <th>Category</th>
+                                    <th>Amount</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="expensesTableBody">
+                                <tr><td colspan="5" class="text-center">No expenses logged yet.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // ... existing code ...
+        const DB_PREFIX = 'collegeBudgetApp_';
+        const today = new Date().toISOString().split('T')[0];
+
+        // Initialize form date fields
+        if(document.getElementById('oneTimeIncomeDate')) document.getElementById('oneTimeIncomeDate').value = today;
+        if(document.getElementById('expenseDate')) document.getElementById('expenseDate').value = today;
+        if(document.getElementById('filterMonth')) {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = (now.getMonth() + 1).toString().padStart(2, '0');
+            document.getElementById('filterMonth').value = `${year}-${month}`;
+        }
+
+        function generateId() {
+            return '_' + Math.random().toString(36).substr(2, 9);
+        }
+
+        function formatCurrency(amount) {
+            return `$${parseFloat(amount).toFixed(2)}`;
+        }
+        
+        function getMonthYear(dateString) {
+            return dateString ? dateString.substring(0, 7) : "";
+        }
+        
+        const currentMonthYear = getMonthYear(today);
+
+        let data = {
+            incomeSources: [],
+            oneTimeIncome: [],
+            categories: [],
+            expenses: []
+        };
+
+        function saveData() {
+            localStorage.setItem(DB_PREFIX + 'data', JSON.stringify(data));
+        }
+
+        function loadData() {
+            const storedData = localStorage.getItem(DB_PREFIX + 'data');
+            if (storedData) {
+                data = JSON.parse(storedData);
+            } else {
+                data.categories = [
+                    { id: generateId(), name: "Food & Groceries", budget: 300, color: "#10b981" },
+                    { id: generateId(), name: "Cafes & Restaurants", budget: 100, color: "#f59e0b" },
+                    { id: generateId(), name: "School Supplies", budget: 50, color: "#6366f1" },
+                    { id: generateId(), name: "Entertainment", budget: 75, color: "#ec4899" },
+                    { id: generateId(), name: "Transportation", budget: 60, color: "#8b5cf6" },
+                    { id: generateId(), name: "Personal Care", budget: 40, color: "#06b6d4" },
+                ];
+                saveData();
+            }
+        }
+
+        // --- VIEW NAVIGATION ---
+        const navLinks = document.querySelectorAll('.nav-link');
+        const views = document.querySelectorAll('.view');
+        const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+        const sidebar = document.getElementById('sidebar');
+
+        function showView(viewId) {
+            views.forEach(view => view.classList.remove('active'));
+            navLinks.forEach(link => link.classList.remove('active'));
+
+            document.getElementById(viewId + 'View').classList.add('active');
+            document.querySelector(`.nav-link[data-view="${viewId}"]`).classList.add('active');
+            
+            // Close mobile menu if open
+            sidebar.classList.remove('active');
+            
+            if (viewId === 'dashboard') renderDashboard();
+            if (viewId === 'income') { renderMonthlyIncomeList(); renderOneTimeIncomeList(); }
+            if (viewId === 'budgets') renderCategoryList();
+            if (viewId === 'expenses') { populateCategoryDropdown(); renderExpensesTable(); }
+        }
+
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                showView(e.target.dataset.view);
+            });
+        });
+        
+        mobileMenuToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+        });
+
+        // --- INCOME MANAGEMENT ---
+        const monthlyIncomeForm = document.getElementById('addMonthlyIncomeForm');
+        const monthlyIncomeListEl = document.getElementById('monthlyIncomeList');
+        const oneTimeIncomeForm = document.getElementById('addOneTimeIncomeForm');
+        const oneTimeIncomeListEl = document.getElementById('oneTimeIncomeList');
+
+        monthlyIncomeForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('monthlyIncomeName').value;
+            const amount = parseFloat(document.getElementById('monthlyIncomeAmount').value);
+            if (name && amount > 0) {
+                data.incomeSources.push({ id: generateId(), name, amount, type: 'monthly' });
+                saveData();
+                renderMonthlyIncomeList();
+                renderDashboard();
+                monthlyIncomeForm.reset();
+            }
+        });
+
+        function renderMonthlyIncomeList() {
+            monthlyIncomeListEl.innerHTML = '';
+            if (data.incomeSources.length === 0) {
+                monthlyIncomeListEl.innerHTML = '<div class="empty-state"><div class="empty-state-title">No monthly income sources</div><div class="empty-state-description">Add your first recurring income source</div></div>';
+                return;
+            }
+            data.incomeSources.forEach(income => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <span><strong>${income.name}</strong><br><small>${formatCurrency(income.amount)}/month</small></span>
+                    <button class="btn btn-small btn-danger" onclick="deleteMonthlyIncome('${income.id}')">Delete</button>
+                `;
+                monthlyIncomeListEl.appendChild(li);
+            });
+        }
+        
+        function deleteMonthlyIncome(id) {
+            if (confirm('Are you sure you want to delete this monthly income source?')) {
+                data.incomeSources = data.incomeSources.filter(inc => inc.id !== id);
+                saveData();
+                renderMonthlyIncomeList();
+                renderDashboard();
+            }
+        }
+
+        oneTimeIncomeForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('oneTimeIncomeName').value;
+            const amount = parseFloat(document.getElementById('oneTimeIncomeAmount').value);
+            const date = document.getElementById('oneTimeIncomeDate').value;
+            if (name && amount > 0 && date) {
+                data.oneTimeIncome.push({ id: generateId(), name, amount, date });
+                saveData();
+                renderOneTimeIncomeList();
+                renderDashboard();
+                oneTimeIncomeForm.reset();
+                document.getElementById('oneTimeIncomeDate').value = today;
+            }
+        });
+
+        function renderOneTimeIncomeList() {
+            oneTimeIncomeListEl.innerHTML = '';
+            const sortedIncome = [...data.oneTimeIncome].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            if (sortedIncome.length === 0) {
+                oneTimeIncomeListEl.innerHTML = '<div class="empty-state"><div class="empty-state-title">No one-time income</div><div class="empty-state-description">Add occasional income like gifts or bonuses</div></div>';
+                return;
+            }
+            sortedIncome.forEach(income => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <span><strong>${income.name}</strong><br><small>${income.date} • ${formatCurrency(income.amount)}</small></span>
+                    <button class="btn btn-small btn-danger" onclick="deleteOneTimeIncome('${income.id}')">Delete</button>
+                `;
+                oneTimeIncomeListEl.appendChild(li);
+            });
+        }
+        
+        function deleteOneTimeIncome(id) {
+            if (confirm('Are you sure you want to delete this one-time income?')) {
+                data.oneTimeIncome = data.oneTimeIncome.filter(inc => inc.id !== id);
+                saveData();
+                renderOneTimeIncomeList();
+                renderDashboard();
+            }
+        }
+
+        // --- BUDGETS (CATEGORIES) MANAGEMENT ---
+        const categoryForm = document.getElementById('addCategoryForm');
+        const categoryListEl = document.getElementById('categoryList');
+
+        categoryForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('categoryName').value;
+            const budget = parseFloat(document.getElementById('categoryBudget').value);
+            const color = document.getElementById('categoryColor').value;
+            if (name && budget >= 0) {
+                data.categories.push({ id: generateId(), name, budget, color });
+                saveData();
+                renderCategoryList();
+                populateCategoryDropdown();
+                renderDashboard();
+                categoryForm.reset();
+                document.getElementById('categoryColor').value = "#6366f1";
+            }
+        });
+
+        function renderCategoryList() {
+            categoryListEl.innerHTML = '';
+            if (data.categories.length === 0) {
+                categoryListEl.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🎯</div><div class="empty-state-title">No categories yet</div><div class="empty-state-description">Create your first spending category to start budgeting</div></div>';
+                return;
+            }
+            data.categories.forEach(cat => {
+                const expensesForCategoryThisMonth = data.expenses.filter(exp => exp.categoryId === cat.id && getMonthYear(exp.date) === currentMonthYear);
+                const spentThisMonth = expensesForCategoryThisMonth.reduce((sum, exp) => sum + exp.amount, 0);
+                const percentageSpent = cat.budget > 0 ? (spentThisMonth / cat.budget) * 100 : 0;
+                
+                let progressClass = 'normal';
+                if (percentageSpent > 100) progressClass = 'danger';
+                else if (percentageSpent > 80) progressClass = 'warning';
+                
+                const item = document.createElement('div');
+                item.className = 'budget-item';
+                item.innerHTML = `
+                    <div class="budget-header">
+                        <div class="budget-name" style="color: ${cat.color};">${cat.name}</div>
+                        <button class="btn btn-small btn-danger" onclick="deleteCategory('${cat.id}')">Delete</button>
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-bar ${progressClass}" style="width: ${Math.min(percentageSpent, 100)}%;"></div>
+                    </div>
+                    <div class="progress-text">
+                        <span>${formatCurrency(spentThisMonth)}</span>
+                        <span>${formatCurrency(cat.budget)}</span>
+                    </div>
+                `;
+                categoryListEl.appendChild(item);
+            });
+        }
+        
+        function deleteCategory(id) {
+            if (confirm('Are you sure you want to delete this category? This will also unassign expenses in this category.')) {
+                data.expenses.forEach(exp => {
+                    if (exp.categoryId === id) exp.categoryId = null;
+                });
+                data.categories = data.categories.filter(cat => cat.id !== id);
+                saveData();
+                renderCategoryList();
+                populateCategoryDropdown();
+                renderExpensesTable();
+                renderDashboard();
+            }
+        }
+
+        // --- EXPENSE MANAGEMENT ---
+        const expenseForm = document.getElementById('addExpenseForm');
+        const expenseCategorySelect = document.getElementById('expenseCategory');
+        const expensesTableBody = document.getElementById('expensesTableBody');
+        const filterMonthInput = document.getElementById('filterMonth');
+        const clearFilterBtn = document.getElementById('clearFilterBtn');
+
+        function populateCategoryDropdown() {
+            expenseCategorySelect.innerHTML = '<option value="">-- Select Category --</option>';
+            data.categories.forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat.id;
+                option.textContent = cat.name;
+                expenseCategorySelect.appendChild(option);
+            });
+        }
+
+        expenseForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const description = document.getElementById('expenseDescription').value;
+            const amount = parseFloat(document.getElementById('expenseAmount').value);
+            const categoryId = expenseCategorySelect.value;
+            const date = document.getElementById('expenseDate').value;
+
+            if (description && amount > 0 && categoryId && date) {
+                data.expenses.push({ id: generateId(), description, amount, categoryId, date });
+                saveData();
+                renderExpensesTable();
+                renderCategoryList();
+                renderDashboard();
+                expenseForm.reset();
+                document.getElementById('expenseDate').value = today;
+                populateCategoryDropdown();
+            } else {
+                alert('Please fill all fields correctly.');
+            }
+        });
+        
+        filterMonthInput.addEventListener('change', renderExpensesTable);
+        clearFilterBtn.addEventListener('click', () => {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = (now.getMonth() + 1).toString().padStart(2, '0');
+            filterMonthInput.value = `${year}-${month}`;
+            renderExpensesTable();
+        });
+
+        function renderExpensesTable() {
+            expensesTableBody.innerHTML = '';
+            const selectedMonth = filterMonthInput.value;
+
+            const filteredExpenses = data.expenses.filter(exp => {
+                return !selectedMonth || getMonthYear(exp.date) === selectedMonth;
+            }).sort((a,b) => new Date(b.date) - new Date(a.date));
+
+            if (filteredExpenses.length === 0) {
+                expensesTableBody.innerHTML = `<tr><td colspan="5" class="text-center">No expenses for ${selectedMonth ? 'this period' : 'any period'}.</td></tr>`;
+                return;
+            }
+
+            filteredExpenses.forEach(exp => {
+                const category = data.categories.find(cat => cat.id === exp.categoryId);
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${exp.date}</td>
+                    <td>${exp.description}</td>
+                    <td>${category ? category.name : 'Uncategorized'}</td>
+                    <td>${formatCurrency(exp.amount)}</td>
+                    <td><button class="btn btn-small btn-danger" onclick="deleteExpense('${exp.id}')">Delete</button></td>
+                `;
+                expensesTableBody.appendChild(tr);
+            });
+        }
+
+        function deleteExpense(id) {
+            if (confirm('Are you sure you want to delete this expense?')) {
+                data.expenses = data.expenses.filter(exp => exp.id !== id);
+                saveData();
+                renderExpensesTable();
+                renderCategoryList();
+                renderDashboard();
+            }
+        }
+
+        // --- DASHBOARD RENDERING ---
+        function renderDashboard() {
+            const totalMonthlyIncomeEl = document.getElementById('totalMonthlyIncome');
+            const totalOneTimeIncomeThisMonthEl = document.getElementById('totalOneTimeIncomeThisMonth');
+            const totalExpensesThisMonthEl = document.getElementById('totalExpensesThisMonth');
+            const remainingBalanceThisMonthEl = document.getElementById('remainingBalanceThisMonth');
+            const dashboardCategorySummaryEl = document.getElementById('dashboardCategorySummary');
+
+            const monthlyIncomeTotal = data.incomeSources.reduce((sum, source) => sum + source.amount, 0);
+            totalMonthlyIncomeEl.textContent = formatCurrency(monthlyIncomeTotal);
+
+            const oneTimeIncomeThisMonth = data.oneTimeIncome
+                .filter(income => getMonthYear(income.date) === currentMonthYear)
+                .reduce((sum, income) => sum + income.amount, 0);
+            totalOneTimeIncomeThisMonthEl.textContent = formatCurrency(oneTimeIncomeThisMonth);
+
+            const expensesThisMonth = data.expenses
+                .filter(exp => getMonthYear(exp.date) === currentMonthYear)
+                .reduce((sum, exp) => sum + exp.amount, 0);
+            totalExpensesThisMonthEl.textContent = formatCurrency(expensesThisMonth);
+
+            const totalIncomeThisMonth = monthlyIncomeTotal + oneTimeIncomeThisMonth;
+            const remainingBalance = totalIncomeThisMonth - expensesThisMonth;
+            remainingBalanceThisMonthEl.textContent = formatCurrency(remainingBalance);
+            remainingBalanceThisMonthEl.className = remainingBalance >= 0 ? 'stat-value positive' : 'stat-value negative';
+            
+            dashboardCategorySummaryEl.innerHTML = '';
+            if (data.categories.length === 0) {
+                dashboardCategorySummaryEl.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📊</div><div class="empty-state-title">No categories defined</div><div class="empty-state-description">Create spending categories to track your budget</div></div>';
+            } else {
+                let hasSpending = false;
+                data.categories.forEach(cat => {
+                    const expensesForCategoryThisMonth = data.expenses.filter(exp => exp.categoryId === cat.id && getMonthYear(exp.date) === currentMonthYear);
+                    const spentThisMonth = expensesForCategoryThisMonth.reduce((sum, exp) => sum + exp.amount, 0);
+                    
+                    if (spentThisMonth > 0 || cat.budget > 0) hasSpending = true;
+
+                    const percentageSpent = cat.budget > 0 ? (spentThisMonth / cat.budget) * 100 : (spentThisMonth > 0 ? 100 : 0);
+                    
+                    let progressClass = 'normal';
+                    if (percentageSpent > 100) progressClass = 'danger';
+                    else if (percentageSpent > 80) progressClass = 'warning';
+
+                    const item = document.createElement('div');
+                    item.className = 'budget-item';
+                    item.innerHTML = `
+                        <div class="budget-header">
+                            <div class="budget-name" style="color: ${cat.color};">${cat.name}</div>
+                            <div class="budget-amount">${formatCurrency(spentThisMonth)} / ${formatCurrency(cat.budget)}</div>
+                        </div>
+                        <div class="progress-container">
+                            <div class="progress-bar ${progressClass}" style="width: ${Math.min(percentageSpent, 100)}%;"></div>
+                        </div>
+                        <div class="progress-text">
+                            <span>${percentageSpent.toFixed(0)}% used</span>
+                            <span>${percentageSpent > 100 ? 'Over budget!' : 'On track'}</span>
+                        </div>
+                    `;
+                    dashboardCategorySummaryEl.appendChild(item);
+                });
+                if (!hasSpending && data.categories.length > 0) {
+                    dashboardCategorySummaryEl.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📊</div><div class="empty-state-title">No spending this month</div><div class="empty-state-description">Start logging expenses to see your budget progress</div></div>';
+                }
+            }
+        }
+
+        // --- APP INITIALIZATION ---
+        function initApp() {
+            loadData();
+            showView('dashboard');
+            renderMonthlyIncomeList();
+            renderOneTimeIncomeList();
+            renderCategoryList();
+            populateCategoryDropdown();
+            renderExpensesTable();
+            renderDashboard();
+        }
+
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
